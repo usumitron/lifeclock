@@ -108,7 +108,6 @@ function getFullTime(diff: number) {
   return { years, days, hours, minutes, seconds };
 }
 
-
 // --- パフォーマンス改善: 現在時刻表示（1秒ごとの更新で十分なため setInterval を使用） ---
 function CurrentTimeClock({ t, locale }: { t: Translations; locale: string }) {
   const [now, setNow] = useState(() => Date.now());
@@ -120,14 +119,26 @@ function CurrentTimeClock({ t, locale }: { t: Translations; locale: string }) {
 
   return (
     // ▼ 変更: 横画面(高さ不足)時は余白を削り文字を小さくする (max-h-[500px]:...)
-    <div className="text-sm sm:text-base px-4 py-2 max-h-[500px]:py-0 max-h-[500px]:text-xs" style={{ fontVariantNumeric: "tabular-nums" }}>
+    <div
+      className="text-sm sm:text-base px-4 py-2 max-h-[500px]:py-0 max-h-[500px]:text-xs"
+      style={{ fontVariantNumeric: "tabular-nums" }}>
       {t.currentTime}: {formatDateTime(new Date(now), locale)}
     </div>
   );
 }
 
 // --- パフォーマンス改善: 経過時間カウンター（高速描画のため requestAnimationFrame を使用） ---
-function ElapsedTimeCounter({ birth, unit, locale, t }: { birth: Date | null; unit: Unit; locale: string; t: Translations }) {
+function ElapsedTimeCounter({
+  birth,
+  unit,
+  locale,
+  t,
+}: {
+  birth: Date | null;
+  unit: Unit;
+  locale: string;
+  t: Translations;
+}) {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -144,12 +155,18 @@ function ElapsedTimeCounter({ birth, unit, locale, t }: { birth: Date | null; un
     if (!birth) return 0;
     const diff = now - birth.getTime();
     switch (unit) {
-      case "year": return diff / YEAR;
-      case "day": return diff / DAY;
-      case "hour": return diff / HOUR;
-      case "minute": return diff / MINUTE;
-      case "second": return diff / SECOND;
-      default: return 0;
+      case "year":
+        return diff / YEAR;
+      case "day":
+        return diff / DAY;
+      case "hour":
+        return diff / HOUR;
+      case "minute":
+        return diff / MINUTE;
+      case "second":
+        return diff / SECOND;
+      default:
+        return 0;
     }
   };
 
@@ -160,8 +177,8 @@ function ElapsedTimeCounter({ birth, unit, locale, t }: { birth: Date | null; un
     unit === "full"
       ? getFullTime(diff)
       : unit === "second"
-      ? Math.floor(value).toLocaleString(locale)
-      : formatNumber(value, DECIMALS[unit], locale);
+        ? Math.floor(value).toLocaleString(locale)
+        : formatNumber(value, DECIMALS[unit], locale);
 
   return (
     <div
@@ -171,11 +188,31 @@ function ElapsedTimeCounter({ birth, unit, locale, t }: { birth: Date | null; un
         // ▼ 変更: 横画面時は上下の隙間を減らす (max-h-[500px]:gap-y-1)
         <div className="flex flex-wrap justify-center gap-x-2 sm:gap-x-6 gap-y-4 max-h-[500px]:gap-y-1">
           {[
-            { key: "years", v: (display as ReturnType<typeof getFullTime>).years, l: t.year },
-            { key: "days", v: (display as ReturnType<typeof getFullTime>).days, l: t.day },
-            { key: "hours", v: (display as ReturnType<typeof getFullTime>).hours, l: t.hour },
-            { key: "minutes", v: (display as ReturnType<typeof getFullTime>).minutes, l: t.minute },
-            { key: "seconds", v: (display as ReturnType<typeof getFullTime>).seconds, l: t.second },
+            {
+              key: "years",
+              v: (display as ReturnType<typeof getFullTime>).years,
+              l: t.year,
+            },
+            {
+              key: "days",
+              v: (display as ReturnType<typeof getFullTime>).days,
+              l: t.day,
+            },
+            {
+              key: "hours",
+              v: (display as ReturnType<typeof getFullTime>).hours,
+              l: t.hour,
+            },
+            {
+              key: "minutes",
+              v: (display as ReturnType<typeof getFullTime>).minutes,
+              l: t.minute,
+            },
+            {
+              key: "seconds",
+              v: (display as ReturnType<typeof getFullTime>).seconds,
+              l: t.second,
+            },
           ].map((item) => (
             <div key={item.key} className="text-center">
               {/* ▼ 変更: 横画面時は数字サイズを少し小さくする (max-h-[500px]:text-4xl) */}
@@ -199,7 +236,6 @@ function ElapsedTimeCounter({ birth, unit, locale, t }: { birth: Date | null; un
   );
 }
 
-
 // --- メインコンポーネント（静的UIと状態管理を担当） ---
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
@@ -221,12 +257,18 @@ export default function Home() {
     if (savedLang) {
       setLang(savedLang);
     } else {
-      const browserLang = typeof navigator !== "undefined" && navigator.language.startsWith("ja") ? "ja" : "en";
+      const browserLang =
+        typeof navigator !== "undefined" && navigator.language.startsWith("ja")
+          ? "ja"
+          : "en";
       setLang(browserLang);
     }
 
     const savedUnit = localStorage.getItem("unit");
-    if (savedUnit && ["full", "year", "day", "hour", "minute", "second"].includes(savedUnit)) {
+    if (
+      savedUnit &&
+      ["full", "year", "day", "hour", "minute", "second"].includes(savedUnit)
+    ) {
       setUnit(savedUnit as Unit);
     }
 
@@ -234,6 +276,22 @@ export default function Home() {
     if (savedBirth) {
       setBirth(new Date(savedBirth));
     }
+
+    const resetScroll = () => {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "instant" as ScrollBehavior,
+      });
+    };
+
+    window.addEventListener("orientationchange", resetScroll);
+    window.addEventListener("resize", resetScroll);
+
+    return () => {
+      window.removeEventListener("orientationchange", resetScroll);
+      window.removeEventListener("resize", resetScroll);
+    };
   }, []);
 
   const changeLang = (l: Lang) => {
@@ -251,7 +309,8 @@ export default function Home() {
         setBirth(d);
         localStorage.setItem("birth", d.toISOString());
 
-        const isTouchDevice = typeof window !== "undefined" && "ontouchstart" in window;
+        const isTouchDevice =
+          typeof window !== "undefined" && "ontouchstart" in window;
         if (!isKeyboardInput.current && !isTouchDevice) {
           setEditingBirth(false);
         }
@@ -279,8 +338,8 @@ export default function Home() {
     // ▼ 変更: 100vh を 100dvh にし、横画面時の縦ギャップを縮小 (max-h-[500px]:gap-2)
     <div
       className="
-        min-h-[100dvh] flex flex-col items-center justify-center
-        px-4 sm:px-8 gap-6 max-h-[500px]:gap-2
+        min-h-[100dvh] overflow-hidden flex flex-col items-center justify-center
+        px-4 sm:px-8 gap-6 landscape:gap-1
         bg-white text-black
         landscape:justify-start
         landscape:pt-6
@@ -295,7 +354,7 @@ export default function Home() {
 
       <div className="sm:text-sm opacity-60 text-center leading-relaxed space-y-1 max-h-[500px]:space-y-0">
         <CurrentTimeClock t={t} locale={locale} />
-        
+
         <div className="text-sm sm:text-base max-h-[500px]:text-xs">
           {editingBirth ? (
             <input
@@ -338,14 +397,15 @@ export default function Home() {
       <ElapsedTimeCounter birth={birth} unit={unit} locale={locale} t={t} />
 
       <div className="grid grid-cols-3 sm:flex gap-2 max-h-[500px]:gap-1">
-        {(["full", "year", "day", "hour", "minute", "second"] as Unit[]).map((u) => (
-          <button
-            key={u}
-            onClick={() => {
-              setUnit(u);
-              localStorage.setItem("unit", u);
-            }}
-            className={`
+        {(["full", "year", "day", "hour", "minute", "second"] as Unit[]).map(
+          (u) => (
+            <button
+              key={u}
+              onClick={() => {
+                setUnit(u);
+                localStorage.setItem("unit", u);
+              }}
+              className={`
               px-3 py-2 sm:px-4 sm:py-2 rounded-lg border transition-all duration-150 active:scale-95
               max-h-[500px]:py-1 max-h-[500px]:px-2 max-h-[500px]:text-xs
               ${
@@ -354,9 +414,10 @@ export default function Home() {
                   : `bg-white text-black border-gray-300 hover:bg-gray-200 dark:bg-white/10 dark:text-white dark:border-white/20 dark:hover:bg-white/30`
               }
             `}>
-            {t[u]}
-          </button>
-        ))}
+              {t[u]}
+            </button>
+          ),
+        )}
       </div>
     </div>
   );
