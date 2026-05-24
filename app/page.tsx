@@ -275,7 +275,8 @@ export default function Home() {
 
   if (!isMounted) return null;
 
-return (
+  return (
+    // ▼ 変更: 100vh を 100dvh にし、横画面時の縦ギャップを縮小 (max-h-[500px]:gap-2)
     <div
       className="
         min-h-[100dvh] flex flex-col items-center justify-center
@@ -284,25 +285,56 @@ return (
         dark:bg-gradient-to-br dark:from-gray-900 dark:via-black dark:to-gray-800
         dark:text-white
       ">
-      
       {/* 2. 言語切替ボタンも高さに応じて小さく */}
       <div className="absolute top-4 right-4 max-h-[500px]:top-2 flex gap-2">
-        {/* ... */}
+        <button onClick={() => changeLang("ja")}>JA</button>
+        <button onClick={() => changeLang("en")}>EN</button>
       </div>
 
       <div className="sm:text-sm opacity-60 text-center leading-relaxed space-y-1 max-h-[500px]:space-y-0">
-        {/* 現在時刻の文字サイズも縮小 */}
         <CurrentTimeClock t={t} locale={locale} />
         
         <div className="text-sm sm:text-base max-h-[500px]:text-xs">
-          {/* ... (編集ボタン等の表示) */}
+          {editingBirth ? (
+            <input
+              type="date"
+              value={draftDate}
+              autoFocus
+              onClick={() => {
+                isKeyboardInput.current = false;
+              }}
+              onKeyDown={handleKeyDown}
+              onChange={handleDateChange}
+              onBlur={handleInputBlur}
+              className="
+                border rounded-md px-3 py-2 max-h-[500px]:py-1
+                text-base sm:text-lg max-h-[500px]:text-sm bg-white text-black
+                focus:outline-none focus:ring-2 focus:ring-blue-400
+              "
+            />
+          ) : (
+            <span
+              onClick={() => {
+                setDraftDate(birth ? birth.toISOString().slice(0, 10) : "");
+                setEditingBirth(true);
+              }}
+              className="
+                cursor-pointer px-2 py-1 rounded-md
+                transition-all duration-200 hover:bg-gray-200 hover:text-black
+                dark:hover:bg-white dark:hover:text-black
+              ">
+              {t.yourBirth}: {birth ? formatDate(birth, locale) : t.notSet}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* 3. 経過時間表示のコンテナを修正 */}
+      <div className="text-sm sm:text-base md:text-lg opacity-80 text-center max-h-[500px]:text-xs max-h-[500px]:opacity-50">
+        {t.title}
+      </div>
+
       <ElapsedTimeCounter birth={birth} unit={unit} locale={locale} t={t} />
 
-      {/* 4. 下部のボタン群も高さ不足時は縮小 */}
       <div className="grid grid-cols-3 sm:flex gap-2 max-h-[500px]:gap-1">
         {(["full", "year", "day", "hour", "minute", "second"] as Unit[]).map((u) => (
           <button
