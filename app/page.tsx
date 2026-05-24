@@ -341,7 +341,6 @@ export default function Home() {
         min-h-[100dvh] overflow-hidden flex flex-col items-center justify-center
         px-4 sm:px-8 gap-6 landscape:gap-1
         bg-white text-black
-        landscape:-translate-y-6
         landscape:gap-3
         dark:bg-gradient-to-br dark:from-gray-900 dark:via-black dark:to-gray-800
         dark:text-white
