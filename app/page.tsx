@@ -128,18 +128,7 @@ function CurrentTimeClock({ t, locale }: { t: Translations; locale: string }) {
 }
 
 // --- パフォーマンス改善: 経過時間カウンター（高速描画のため requestAnimationFrame を使用） ---
-function ElapsedTimeCounter({
-  birth,
-  unit,
-  locale,
-  t,
-}: {
-  birth: Date | null;
-  unit: Unit;
-  locale: string;
-  t: Translations;
-}) {
-  // 修正1: () => Date.now() にすることでレンダリング時の非純粋関数呼び出しエラーを回避
+function ElapsedTimeCounter({ birth, unit, locale, t }: { birth: Date | null; unit: Unit; locale: string; t: Translations }) {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -156,18 +145,12 @@ function ElapsedTimeCounter({
     if (!birth) return 0;
     const diff = now - birth.getTime();
     switch (unit) {
-      case "year":
-        return diff / YEAR;
-      case "day":
-        return diff / DAY;
-      case "hour":
-        return diff / HOUR;
-      case "minute":
-        return diff / MINUTE;
-      case "second":
-        return diff / SECOND;
-      default:
-        return 0;
+      case "year": return diff / YEAR;
+      case "day": return diff / DAY;
+      case "hour": return diff / HOUR;
+      case "minute": return diff / MINUTE;
+      case "second": return diff / SECOND;
+      default: return 0;
     }
   };
 
@@ -178,49 +161,32 @@ function ElapsedTimeCounter({
     unit === "full"
       ? getFullTime(diff)
       : unit === "second"
-        ? Math.floor(value).toLocaleString(locale)
-        : formatNumber(value, DECIMALS[unit], locale);
+      ? Math.floor(value).toLocaleString(locale)
+      : formatNumber(value, DECIMALS[unit], locale);
 
   return (
     <div
       className="font-bold text-center text-5xl sm:text-7xl md:text-8xl tracking-tight transition-all duration-100"
       style={{ fontVariantNumeric: "tabular-nums" }}>
       {unit === "full" ? (
-        <div className="flex flex-wrap justify-center gap-x-6 gap-y-4">
+        // ▼ 変更1: スマホ画面では項目間の横の隙間を狭くする（gap-x-6 → gap-x-2 sm:gap-x-6）
+        <div className="flex flex-wrap justify-center gap-x-2 sm:gap-x-6 gap-y-4">
           {[
-            {
-              key: "years",
-              v: (display as ReturnType<typeof getFullTime>).years,
-              l: t.year,
-            },
-            {
-              key: "days",
-              v: (display as ReturnType<typeof getFullTime>).days,
-              l: t.day,
-            },
-            {
-              key: "hours",
-              v: (display as ReturnType<typeof getFullTime>).hours,
-              l: t.hour,
-            },
-            {
-              key: "minutes",
-              v: (display as ReturnType<typeof getFullTime>).minutes,
-              l: t.minute,
-            },
-            {
-              key: "seconds",
-              v: (display as ReturnType<typeof getFullTime>).seconds,
-              l: t.second,
-            },
+            { key: "years", v: (display as ReturnType<typeof getFullTime>).years, l: t.year },
+            { key: "days", v: (display as ReturnType<typeof getFullTime>).days, l: t.day },
+            { key: "hours", v: (display as ReturnType<typeof getFullTime>).hours, l: t.hour },
+            { key: "minutes", v: (display as ReturnType<typeof getFullTime>).minutes, l: t.minute },
+            { key: "seconds", v: (display as ReturnType<typeof getFullTime>).seconds, l: t.second },
           ].map((item) => (
             <div key={item.key} className="text-center">
+              {/* ▼ 変更2: スマホ画面では数字のフォントサイズを小さくし、左右の余白を消す（text-3xl、mx-0） */}
               <div
-                className={`text-4xl sm:text-5xl md:text-6xl font-bold leading-none text-center ${widthClassMap[item.key as keyof typeof widthClassMap]} mx-1`}
+                className={`text-3xl min-[390px]:text-4xl sm:text-5xl md:text-6xl font-bold leading-none text-center ${widthClassMap[item.key as keyof typeof widthClassMap]} mx-0 sm:mx-1`}
                 style={{ fontVariantNumeric: "tabular-nums" }}>
                 {item.v}
               </div>
-              <div className="text-sm sm:text-base opacity-70 mt-1 tracking-wide">
+              {/* ▼ 変更3: スマホ画面では「年・日・時間」などのラベルも少し小さくする（text-xs） */}
+              <div className="text-xs sm:text-base opacity-70 mt-1 tracking-wide">
                 {item.l}
               </div>
             </div>
