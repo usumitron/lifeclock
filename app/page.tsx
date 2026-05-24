@@ -108,7 +108,6 @@ function getFullTime(diff: number) {
   return { years, days, hours, minutes, seconds };
 }
 
-
 // --- パフォーマンス改善: 現在時刻表示（1秒ごとの更新で十分なため setInterval を使用） ---
 function CurrentTimeClock({ t, locale }: { t: Translations; locale: string }) {
   // 修正1: () => Date.now() にすることでレンダリング時の非純粋関数呼び出しエラーを回避
@@ -120,14 +119,26 @@ function CurrentTimeClock({ t, locale }: { t: Translations; locale: string }) {
   }, []);
 
   return (
-    <div className="text-sm sm:text-base px-4 py-2" style={{ fontVariantNumeric: "tabular-nums" }}>
+    <div
+      className="text-sm sm:text-base px-4 py-2"
+      style={{ fontVariantNumeric: "tabular-nums" }}>
       {t.currentTime}: {formatDateTime(new Date(now), locale)}
     </div>
   );
 }
 
 // --- パフォーマンス改善: 経過時間カウンター（高速描画のため requestAnimationFrame を使用） ---
-function ElapsedTimeCounter({ birth, unit, locale, t }: { birth: Date | null; unit: Unit; locale: string; t: Translations }) {
+function ElapsedTimeCounter({
+  birth,
+  unit,
+  locale,
+  t,
+}: {
+  birth: Date | null;
+  unit: Unit;
+  locale: string;
+  t: Translations;
+}) {
   // 修正1: () => Date.now() にすることでレンダリング時の非純粋関数呼び出しエラーを回避
   const [now, setNow] = useState(() => Date.now());
 
@@ -145,12 +156,18 @@ function ElapsedTimeCounter({ birth, unit, locale, t }: { birth: Date | null; un
     if (!birth) return 0;
     const diff = now - birth.getTime();
     switch (unit) {
-      case "year": return diff / YEAR;
-      case "day": return diff / DAY;
-      case "hour": return diff / HOUR;
-      case "minute": return diff / MINUTE;
-      case "second": return diff / SECOND;
-      default: return 0;
+      case "year":
+        return diff / YEAR;
+      case "day":
+        return diff / DAY;
+      case "hour":
+        return diff / HOUR;
+      case "minute":
+        return diff / MINUTE;
+      case "second":
+        return diff / SECOND;
+      default:
+        return 0;
     }
   };
 
@@ -161,8 +178,8 @@ function ElapsedTimeCounter({ birth, unit, locale, t }: { birth: Date | null; un
     unit === "full"
       ? getFullTime(diff)
       : unit === "second"
-      ? Math.floor(value).toLocaleString(locale)
-      : formatNumber(value, DECIMALS[unit], locale);
+        ? Math.floor(value).toLocaleString(locale)
+        : formatNumber(value, DECIMALS[unit], locale);
 
   return (
     <div
@@ -171,11 +188,31 @@ function ElapsedTimeCounter({ birth, unit, locale, t }: { birth: Date | null; un
       {unit === "full" ? (
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-4">
           {[
-            { key: "years", v: (display as ReturnType<typeof getFullTime>).years, l: t.year },
-            { key: "days", v: (display as ReturnType<typeof getFullTime>).days, l: t.day },
-            { key: "hours", v: (display as ReturnType<typeof getFullTime>).hours, l: t.hour },
-            { key: "minutes", v: (display as ReturnType<typeof getFullTime>).minutes, l: t.minute },
-            { key: "seconds", v: (display as ReturnType<typeof getFullTime>).seconds, l: t.second },
+            {
+              key: "years",
+              v: (display as ReturnType<typeof getFullTime>).years,
+              l: t.year,
+            },
+            {
+              key: "days",
+              v: (display as ReturnType<typeof getFullTime>).days,
+              l: t.day,
+            },
+            {
+              key: "hours",
+              v: (display as ReturnType<typeof getFullTime>).hours,
+              l: t.hour,
+            },
+            {
+              key: "minutes",
+              v: (display as ReturnType<typeof getFullTime>).minutes,
+              l: t.minute,
+            },
+            {
+              key: "seconds",
+              v: (display as ReturnType<typeof getFullTime>).seconds,
+              l: t.second,
+            },
           ].map((item) => (
             <div key={item.key} className="text-center">
               <div
@@ -197,7 +234,6 @@ function ElapsedTimeCounter({ birth, unit, locale, t }: { birth: Date | null; un
     </div>
   );
 }
-
 
 // --- メインコンポーネント（静的UIと状態管理を担当） ---
 export default function Home() {
@@ -221,12 +257,18 @@ export default function Home() {
     if (savedLang) {
       setLang(savedLang);
     } else {
-      const browserLang = typeof navigator !== "undefined" && navigator.language.startsWith("ja") ? "ja" : "en";
+      const browserLang =
+        typeof navigator !== "undefined" && navigator.language.startsWith("ja")
+          ? "ja"
+          : "en";
       setLang(browserLang);
     }
 
     const savedUnit = localStorage.getItem("unit");
-    if (savedUnit && ["full", "year", "day", "hour", "minute", "second"].includes(savedUnit)) {
+    if (
+      savedUnit &&
+      ["full", "year", "day", "hour", "minute", "second"].includes(savedUnit)
+    ) {
       setUnit(savedUnit as Unit);
     }
 
@@ -251,7 +293,12 @@ export default function Home() {
         setBirth(d);
         localStorage.setItem("birth", d.toISOString());
 
-        if (!isKeyboardInput.current) {
+        // ▼ 追加・変更: スマホ（タッチデバイス）かどうかの判定
+        const isTouchDevice =
+          typeof window !== "undefined" && "ontouchstart" in window;
+
+        // キーボード入力中ではなく、かつタッチデバイスでもない（＝PCのクリック）場合のみ即座に閉じる
+        if (!isKeyboardInput.current && !isTouchDevice) {
           setEditingBirth(false);
         }
       }
@@ -292,7 +339,7 @@ export default function Home() {
 
       <div className="sm:text-sm opacity-60 text-center leading-relaxed space-y-1">
         <CurrentTimeClock t={t} locale={locale} />
-        
+
         <div className="text-sm sm:text-base">
           {editingBirth ? (
             <input
@@ -335,14 +382,15 @@ export default function Home() {
       <ElapsedTimeCounter birth={birth} unit={unit} locale={locale} t={t} />
 
       <div className="grid grid-cols-3 sm:flex gap-2">
-        {(["full", "year", "day", "hour", "minute", "second"] as Unit[]).map((u) => (
-          <button
-            key={u}
-            onClick={() => {
-              setUnit(u);
-              localStorage.setItem("unit", u);
-            }}
-            className={`
+        {(["full", "year", "day", "hour", "minute", "second"] as Unit[]).map(
+          (u) => (
+            <button
+              key={u}
+              onClick={() => {
+                setUnit(u);
+                localStorage.setItem("unit", u);
+              }}
+              className={`
               px-3 py-2 sm:px-4 sm:py-2 rounded-lg border transition-all duration-150 active:scale-95
               ${
                 unit === u
@@ -350,9 +398,10 @@ export default function Home() {
                   : `bg-white text-black border-gray-300 hover:bg-gray-200 dark:bg-white/10 dark:text-white dark:border-white/20 dark:hover:bg-white/30`
               }
             `}>
-            {t[u]}
-          </button>
-        ))}
+              {t[u]}
+            </button>
+          ),
+        )}
       </div>
     </div>
   );
