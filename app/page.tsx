@@ -282,6 +282,8 @@ export default function Home() {
         min-h-[100dvh] flex flex-col items-center justify-center
         px-4 sm:px-8 gap-6 max-h-[500px]:gap-2
         bg-white text-black
+        landscape:justify-start
+        landscape:pt-6
         dark:bg-gradient-to-br dark:from-gray-900 dark:via-black dark:to-gray-800
         dark:text-white
       ">
