@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="115" fill="#0a0a0a" />
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)" opacity="0.8" />
+  <defs>
+    <radialGradient id="bgGrad" cx="20%" cy="20%" r="80%">
+      <stop offset="0%" stop-color="#374151" />
+      <stop offset="100%" stop-color="#000000" />
+    </radialGradient>
+    <linearGradient id="sandGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(136, 106)" fill="none" stroke="#F3F4F6" stroke-width="24" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 20 20 L 220 20 C 220 100 170 140 140 156 L 120 166 L 100 156 C 70 140 20 100 20 20 Z" />
+    <path d="M 120 166 L 140 176 C 170 192 220 232 220 312 L 20 312 C 20 232 70 192 100 176 Z" />
+  </g>
+
+  <g transform="translate(136, 106)">
+    <path d="M 45 40 L 195 40 C 190 85 155 115 130 130 L 120 136 L 110 130 C 85 115 50 85 45 40 Z" fill="url(#sandGrad)" />
+    <path d="M 55 292 L 185 292 C 185 255 155 230 135 218 L 120 208 L 105 218 C 85 230 55 255 55 292 Z" fill="url(#sandGrad)" />
+    <rect x="114" y="136" width="12" height="72" rx="6" fill="#60A5FA" />
+  </g>
+
+  <path d="M 370 100 Q 385 100 385 85 Q 385 100 400 100 Q 385 100 385 115 Q 385 100 370 100 Z" fill="#FBBF24" />
+  <path d="M 110 390 Q 120 390 120 380 Q 120 390 130 390 Q 120 390 120 400 Q 120 390 110 390 Z" fill="#FBBF24" opacity="0.7" />
+</svg>
