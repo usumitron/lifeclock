@@ -108,9 +108,9 @@ function getFullTime(diff: number) {
   return { years, days, hours, minutes, seconds };
 }
 
+
 // --- パフォーマンス改善: 現在時刻表示（1秒ごとの更新で十分なため setInterval を使用） ---
 function CurrentTimeClock({ t, locale }: { t: Translations; locale: string }) {
-  // 修正1: () => Date.now() にすることでレンダリング時の非純粋関数呼び出しエラーを回避
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -119,9 +119,8 @@ function CurrentTimeClock({ t, locale }: { t: Translations; locale: string }) {
   }, []);
 
   return (
-    <div
-      className="text-sm sm:text-base px-4 py-2"
-      style={{ fontVariantNumeric: "tabular-nums" }}>
+    // ▼ 変更: 横画面(高さ不足)時は余白を削り文字を小さくする (max-h-[500px]:...)
+    <div className="text-sm sm:text-base px-4 py-2 max-h-[500px]:py-0 max-h-[500px]:text-xs" style={{ fontVariantNumeric: "tabular-nums" }}>
       {t.currentTime}: {formatDateTime(new Date(now), locale)}
     </div>
   );
@@ -169,8 +168,8 @@ function ElapsedTimeCounter({ birth, unit, locale, t }: { birth: Date | null; un
       className="font-bold text-center text-5xl sm:text-7xl md:text-8xl tracking-tight transition-all duration-100"
       style={{ fontVariantNumeric: "tabular-nums" }}>
       {unit === "full" ? (
-        // ▼ 変更1: スマホ画面では項目間の横の隙間を狭くする（gap-x-6 → gap-x-2 sm:gap-x-6）
-        <div className="flex flex-wrap justify-center gap-x-2 sm:gap-x-6 gap-y-4">
+        // ▼ 変更: 横画面時は上下の隙間を減らす (max-h-[500px]:gap-y-1)
+        <div className="flex flex-wrap justify-center gap-x-2 sm:gap-x-6 gap-y-4 max-h-[500px]:gap-y-1">
           {[
             { key: "years", v: (display as ReturnType<typeof getFullTime>).years, l: t.year },
             { key: "days", v: (display as ReturnType<typeof getFullTime>).days, l: t.day },
@@ -179,27 +178,27 @@ function ElapsedTimeCounter({ birth, unit, locale, t }: { birth: Date | null; un
             { key: "seconds", v: (display as ReturnType<typeof getFullTime>).seconds, l: t.second },
           ].map((item) => (
             <div key={item.key} className="text-center">
-              {/* ▼ 変更2: スマホ画面では数字のフォントサイズを小さくし、左右の余白を消す（text-3xl、mx-0） */}
+              {/* ▼ 変更: 横画面時は数字サイズを少し小さくする (max-h-[500px]:text-4xl) */}
               <div
-                className={`text-3xl min-[390px]:text-4xl sm:text-5xl md:text-6xl font-bold leading-none text-center ${widthClassMap[item.key as keyof typeof widthClassMap]} mx-0 sm:mx-1`}
+                className={`text-3xl min-[390px]:text-4xl sm:text-5xl md:text-6xl max-h-[500px]:text-4xl font-bold leading-none text-center ${widthClassMap[item.key as keyof typeof widthClassMap]} mx-0 sm:mx-1`}
                 style={{ fontVariantNumeric: "tabular-nums" }}>
                 {item.v}
               </div>
-              {/* ▼ 変更3: スマホ画面では「年・日・時間」などのラベルも少し小さくする（text-xs） */}
-              <div className="text-xs sm:text-base opacity-70 mt-1 tracking-wide">
+              <div className="text-xs sm:text-base opacity-70 mt-1 max-h-[500px]:mt-0 tracking-wide">
                 {item.l}
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="font-bold text-center text-5xl sm:text-7xl md:text-8xl">
+        <div className="font-bold text-center text-5xl sm:text-7xl md:text-8xl max-h-[500px]:text-5xl">
           {display as string}
         </div>
       )}
     </div>
   );
 }
+
 
 // --- メインコンポーネント（静的UIと状態管理を担当） ---
 export default function Home() {
@@ -215,7 +214,6 @@ export default function Home() {
   const isKeyboardInput = useRef(false);
 
   useEffect(() => {
-    // 修正2: Next.jsのハイドレーション回避のための定石なので、ここだけLinterを無効化
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
 
@@ -223,18 +221,12 @@ export default function Home() {
     if (savedLang) {
       setLang(savedLang);
     } else {
-      const browserLang =
-        typeof navigator !== "undefined" && navigator.language.startsWith("ja")
-          ? "ja"
-          : "en";
+      const browserLang = typeof navigator !== "undefined" && navigator.language.startsWith("ja") ? "ja" : "en";
       setLang(browserLang);
     }
 
     const savedUnit = localStorage.getItem("unit");
-    if (
-      savedUnit &&
-      ["full", "year", "day", "hour", "minute", "second"].includes(savedUnit)
-    ) {
+    if (savedUnit && ["full", "year", "day", "hour", "minute", "second"].includes(savedUnit)) {
       setUnit(savedUnit as Unit);
     }
 
@@ -259,11 +251,7 @@ export default function Home() {
         setBirth(d);
         localStorage.setItem("birth", d.toISOString());
 
-        // ▼ 追加・変更: スマホ（タッチデバイス）かどうかの判定
-        const isTouchDevice =
-          typeof window !== "undefined" && "ontouchstart" in window;
-
-        // キーボード入力中ではなく、かつタッチデバイスでもない（＝PCのクリック）場合のみ即座に閉じる
+        const isTouchDevice = typeof window !== "undefined" && "ontouchstart" in window;
         if (!isKeyboardInput.current && !isTouchDevice) {
           setEditingBirth(false);
         }
@@ -272,7 +260,6 @@ export default function Home() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // 修正3: 省略記法をやめて、正式なif文にする
     if (isMounted) {
       isKeyboardInput.current = true;
     }
@@ -289,24 +276,25 @@ export default function Home() {
   if (!isMounted) return null;
 
   return (
+    // ▼ 変更: 100vh を 100dvh にし、横画面時の縦ギャップを縮小 (max-h-[500px]:gap-2)
     <div
       className="
-        min-h-screen flex flex-col items-center justify-center
-        px-4 sm:px-8 gap-6
+        min-h-[100dvh] flex flex-col items-center justify-center
+        px-4 sm:px-8 gap-6 max-h-[500px]:gap-2
         bg-white text-black
         dark:bg-gradient-to-br dark:from-gray-900 dark:via-black dark:to-gray-800
         dark:text-white
       ">
       {/* 言語切替 */}
-      <div className="absolute top-4 right-4 flex gap-2">
+      <div className="absolute top-4 right-4 max-h-[500px]:top-2 flex gap-2">
         <button onClick={() => changeLang("ja")}>JA</button>
         <button onClick={() => changeLang("en")}>EN</button>
       </div>
 
-      <div className="sm:text-sm opacity-60 text-center leading-relaxed space-y-1">
+      <div className="sm:text-sm opacity-60 text-center leading-relaxed space-y-1 max-h-[500px]:space-y-0">
         <CurrentTimeClock t={t} locale={locale} />
-
-        <div className="text-sm sm:text-base">
+        
+        <div className="text-sm sm:text-base max-h-[500px]:text-xs">
           {editingBirth ? (
             <input
               type="date"
@@ -319,8 +307,8 @@ export default function Home() {
               onChange={handleDateChange}
               onBlur={handleInputBlur}
               className="
-                border rounded-md px-3 py-2
-                text-base sm:text-lg bg-white text-black
+                border rounded-md px-3 py-2 max-h-[500px]:py-1
+                text-base sm:text-lg max-h-[500px]:text-sm bg-white text-black
                 focus:outline-none focus:ring-2 focus:ring-blue-400
               "
             />
@@ -341,33 +329,32 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="text-sm sm:text-base md:text-lg opacity-80 text-center">
+      {/* ▼ 変更: 横画面で高さが足りない時はタイトルを非表示にするか小さくする */}
+      <div className="text-sm sm:text-base md:text-lg opacity-80 text-center max-h-[500px]:text-xs max-h-[500px]:opacity-50">
         {t.title}
       </div>
 
       <ElapsedTimeCounter birth={birth} unit={unit} locale={locale} t={t} />
 
-      <div className="grid grid-cols-3 sm:flex gap-2">
-        {(["full", "year", "day", "hour", "minute", "second"] as Unit[]).map(
-          (u) => (
-            <button
-              key={u}
-              onClick={() => {
-                setUnit(u);
-                localStorage.setItem("unit", u);
-              }}
-              className={`
-              px-3 py-2 sm:px-4 sm:py-2 rounded-lg border transition-all duration-150 active:scale-95
+      <div className="grid grid-cols-3 sm:flex gap-2 max-h-[500px]:gap-1">
+        {(["full", "year", "day", "hour", "minute", "second"] as Unit[]).map((u) => (
+          <button
+            key={u}
+            onClick={() => {
+              setUnit(u);
+              localStorage.setItem("unit", u);
+            }}
+            className={`
+              px-3 py-2 sm:px-4 sm:py-2 max-h-[500px]:py-1 max-h-[500px]:px-2 max-h-[500px]:text-xs rounded-lg border transition-all duration-150 active:scale-95
               ${
                 unit === u
                   ? `bg-black text-white border-black dark:bg-white dark:text-black dark:border-white`
                   : `bg-white text-black border-gray-300 hover:bg-gray-200 dark:bg-white/10 dark:text-white dark:border-white/20 dark:hover:bg-white/30`
               }
             `}>
-              {t[u]}
-            </button>
-          ),
-        )}
+            {t[u]}
+          </button>
+        ))}
       </div>
     </div>
   );
